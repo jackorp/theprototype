@@ -42,7 +42,7 @@ existing=""
 # Get patches that are packaged
 sources=$(grep -e "^Patch[0-9]*:" $file | sort -n)
 # Get patches that are applied
-applied=$(sed -nr 's/%patch([0-9]*).*/\1/p' $file | sort -n)
+applied=$(sed -nr 's/%patch([0-9]+|[[:space:]]+[0-9]+[[:space:]]|[[:space:]]+-P [0-9]+[[:space:]]).*/\1/p' $file | tr -d -c "0-9\n" | sort -n)
 # Get patches in current dir
 if [ -z "$(ls $file)" ]; then
 	die "No specfile found... are we in the correct directory?"
@@ -85,5 +85,10 @@ EOR
 if [[ $(ruby -e "$RSCB") == "true" ]]; then
 	echo "All present patches commited in git are used ✓"
 else
-	die "Unused patches present in git" "$(format_header "Present in current directory")" "$existing" "$(format_header "Checked into git")" "$(echo "$sources" | cut -d' ' -f 2)"
+	# present_f="$(mktemp)"
+	# git_f="$(mktemp)"
+	# echo "$existing" | sort > "$present_f"
+	# echo "$sources" | cut -d' ' -f 2 | sort > "$git_f"
+	# diff -au "$present_f" "$git_f"
+	die "Unused patches present in git" "$(format_header "Present in current directory")" "$(echo "$existing" | sort)" "$(format_header "Checked into git")" "$(echo "$sources" | cut -d' ' -f 2 | sort)"
 fi
